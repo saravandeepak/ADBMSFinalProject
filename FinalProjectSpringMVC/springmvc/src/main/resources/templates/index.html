@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html ng-app ="myApp" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>OneHuskyApp</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+	<script src = "https://cdn.zingchart.com/zingchart.min.js" ></script>  
+    <script src = "https://cdn.zingchart.com/angular/zingchart-angularjs.js" ></script>  
+</head>
+
+<body>
+	<div class="jumbotron text-center">
+		<h2>Flight Analysis</h2>
+        <h4>Adbms Final Project</h4>
+	</div>
+
+    <div class="container-fluid">
+  <h2>Analysis</h2>
+
+  <ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#loc">Locations</a></li>
+    <li><a data-toggle="tab" href="#car">Carriers</a></li>
+    <li><a data-toggle="tab" href="#charts">Charts</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <div id="loc" class="tab-pane fade in active" ng-controller="LocationsController">
+        <div>
+            <form>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>Src</label>
+                        <input type="text" class="form-control" placeholder="Src" ng-model="src" />
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Des</label>
+                        <input type="text" class="form-control" placeholder="Des" ng-model="des" />
+                    </div>
+                </div>
+                <div class="form-row text-center">
+                    <button ng-click="getLocAgg()" class= "btn btn-primary">Go</button>
+                </div>
+            </form>
+        </div>
+        <div>
+        	<h3 class="text-center">Location Agg</h3>
+        	<table class="table table-bordered">
+        		<thead class="thead-dark">
+	        		<th>
+	        			<td>time</td>
+	        			<td>src</td>
+	        			<td>des</td>
+	        			<td>avgFare</td>
+	        			<td>minFare</td>
+	        			<td>maxFare</td>
+	        			<td>carrierCode</td>
+	        		</th>
+        		</thead>
+        		<tbody>
+	        		<tr ng-repeat= "location in locationArr">
+	        			<th scope="row">{{index}}</th>
+	        			<td>{{location.time}}</td>
+	        			<td>{{location.src}}</td>
+	        			<td>{{location.des}}</td>
+	        			<td>{{location.avgFare}}</td>
+	        			<td>{{location.minFare}}</td>
+	        			<td>{{location.maxFare}}</td>
+	        			<td>{{location.cc}}</td>
+	        		</tr>
+        		</tbody>
+        	</table>
+        </div>
+        <div class="container-fluid">
+	        <div class="col-md-6 text-center">
+	          <zingchart id="locAvgC" zc-json="locAvgChart" zc-height="300" zc-width="450" ></zingchart>  
+	      	</div>	
+	      	<div class="col-md-6 text-center">
+	          <zingchart id="locMinC" zc-json="locMinChart" zc-height="300" zc-width="450" ></zingchart>  
+	      	</div>
+	      	<div class="col-md-6 text-center">
+	          <zingchart id="locMaxC" zc-json="locMaxChart" zc-height="300" zc-width="450" ></zingchart>  
+	      	</div>
+      	</div>
+        <div>
+        	<select ng-model="cf" ng-options="x for x in cfArray" ng-change="getTopLoc(cf)" > </select>
+        </div>
+        <div class="col-md-4">
+        	<h3 class="text-center">Top Locations</h3>
+        	<table class="table table-bordered">
+        		<thead class="thead-dark">
+	        		<th>
+	        			<td>Locations</td>
+	        			<td>count</td>
+	        		</th>
+        		</thead>
+        		<tbody>
+	        		<tr ng-repeat= "location in topLocations | limitTo:limit">
+	        			<th scope="row">{{$index+1}}</th>
+	        			<td>{{location.srcDes}}</td>
+	        			<td>{{location.count}}</td>
+	        		</tr>
+        		</tbody>
+        	</table>
+        </div>
+        <div class="col-md-4">
+        	<h3 class="text-center">Top Origins</h3>
+        	<table class="table table-bordered">
+        		<thead class="thead-dark">
+	        		<th>
+	        			<td>Origin</td>
+	        			<td>count</td>
+	        		</th>
+        		</thead>
+        		<tbody>
+	        		<tr ng-repeat= "origin in topOrigins | limitTo:limit">
+	        			<th scope="row">{{$index+1}}</th>
+	        			<td>{{origin.origin}}</td>
+	        			<td>{{origin.count}}</td>
+	        		</tr>
+        		</tbody>
+        	</table>
+        </div>
+        <div class="col-md-4">
+        	<h3 class="text-center">Top Destinations</h3>
+        	<table class="table table-bordered">
+        		<thead class="thead-dark">
+	        		<th>
+	        			<td>Destination</td>
+	        			<td>count</td>
+	        		</th>
+        		</thead>
+        		<tbody>
+	        		<tr ng-repeat= "des in topDestinations | limitTo:limit">
+	        			<th scope="row">{{$index+1}}</th>
+	        			<td>{{des.destination}}</td>
+	        			<td>{{des.count}}</td>
+	        		</tr>
+        		</tbody>
+        	</table>
+        </div>
+    </div>
+    <div id="car" class="tab-pane fade" ng-controller="CarriersController">
+      <div class="container-fluid">
+            <form>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>CarrierCode</label>
+                        <input type="text" class="form-control" placeholder="cc" ng-model="cc" />
+                    </div>
+                    <div class="col-md-6">
+                    	<br />
+                    	<button ng-click="getCarAgg()" class= "btn btn-primary">Go</button>
+                	</div>
+                </div>
+            </form>
+        </div>
+        <div>
+        	<h3 class="text-center">Carrier Agg</h3>
+        	<table class="table table-bordered">
+        		<thead class="thead-dark">
+	        		<th>
+	        			<td>time</td>
+	        			<td>cc</td>
+	        			<td>avgFare</td>
+	        			<td>minFare</td>
+	        			<td>maxFare</td>
+	        			<td>sumFare</td>
+	        		</th>
+        		</thead>
+        		<tbody>
+	        		<tr ng-repeat= "carrier in carrierArr">
+	        			<th scope="row">{{index}}</th>
+	        			<td>{{carrier.time}}</td>
+	        			<td>{{carrier.cc}}</td>
+	        			<td>{{carrier.avgFare}}</td>
+	        			<td>{{carrier.minFare}}</td>
+	        			<td>{{carrier.maxFare}}</td>
+	        			<td>{{carrier.sumFare}}</td>
+	        		</tr>
+        		</tbody>
+        	</table>
+        </div>
+        <div>
+	        <div class="col-md-6 text-center">
+	          <zingchart id="carAvgC" zc-json="carAvgChart" zc-height="300" zc-width="500" ></zingchart>  
+	      	</div>	
+	      	<div class="col-md-6 text-center">
+	          <zingchart id="carMinC" zc-json="carMinChart" zc-height="300" zc-width="500" ></zingchart>  
+	      	</div>
+	      	<div class="col-md-6 text-center">
+	          <zingchart id="carMaxC" zc-json="carMaxChart" zc-height="300" zc-width="500" ></zingchart>  
+	      	</div>
+	      	<div class="col-md-6 text-center">
+	          <zingchart id="carSumC" zc-json="carSumChart" zc-height="300" zc-width="500" ></zingchart>  
+	      	</div>
+      	</div>
+        <div>
+        	<select ng-model="cf" ng-options="x for x in cfArray" ng-change="getTopCar(cf)" > </select>
+        </div>
+        <div class="col-md-4">
+        	<h3 class="text-center">Top Operating Carriers</h3>
+        	<table class="table table-bordered">
+        		<thead class="thead-dark">
+	        		<th>
+	        			<td>Carrier Code</td>
+	        			<td>count</td>
+	        		</th>
+        		</thead>
+        		<tbody>
+	        		<tr ng-repeat= "op in topOpCar | limitTo:limit">
+	        			<th scope="row">{{$index+1}}</th>
+	        			<td>{{op.opCarrier}}</td>
+	        			<td>{{op.count}}</td>
+	        		</tr>
+        		</tbody>
+        	</table>
+        </div>
+        <div class="col-md-4">
+        	<h3 class="text-center">Top Ticketing Carrier</h3>
+        	<table class="table table-bordered">
+        		<thead class="thead-dark">
+	        		<th>
+	        			<td>Carrier Code</td>
+	        			<td>count</td>
+	        		</th>
+        		</thead>
+        		<tbody>
+	        		<tr ng-repeat= "tkt in topTktCar | limitTo:limit">
+	        			<th scope="row">{{$index+1}}</th>
+	        			<td>{{tkt.tktCarrier}}</td>
+	        			<td>{{tkt.count}}</td>
+	        		</tr>
+        		</tbody>
+        	</table>
+        </div>
+        <div class="col-md-4">
+        	<h3 class="text-center">Top Revenue Carrier</h3>
+        	<table class="table table-bordered">
+        		<thead class="thead-dark">
+	        		<th>
+	        			<td>Carrier Code</td>
+	        			<td>Revenue</td>
+	        		</th>
+        		</thead>
+        		<tbody>
+	        		<tr ng-repeat= "tkt in topTktRevCar | limitTo:limit">
+	        			<th scope="row">{{$index+1}}</th>
+	        			<td>{{tkt.tktCarrier}}</td>
+	        			<td>{{tkt.sum}}</td>
+	        		</tr>
+        		</tbody>
+        	</table>
+        </div>
+    </div>
+    <div id="charts" class="tab-pane fade" ng-controller="RoundtripController">
+      <h3>Round Trip vs Single</h3>
+	  <zingchart id="rtChart" zc-json="rtChart" zc-height="500" zc-width="800" ></zingchart>
+    </div>
+  </div>
+</div>
+	<script type="text/javascript" src="js/index.js"></script>
+	<script type="text/javascript" src="js/charts.js"></script>
+    
+</body>
+
+</html>
+
